@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Product Intelligence AI</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        header {
+            background: #17202a;
+            color: white;
+            padding: 25px 40px;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        header p {
+            margin: 8px 0 0;
+            color: #d5d8dc;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .search-card,
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .search-card h2 {
+            margin-top: 0;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            border: 1px solid #ccd1d1;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        textarea {
+            height: 90px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            background: #2874a6;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1f618d;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            font-weight: bold;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: #d5f5e3;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .card h2 {
+            margin-top: 0;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        .quality {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .quality-box {
+            background: #f4f6f7;
+            padding: 18px;
+            text-align: center;
+            border-radius: 8px;
+        }
+
+        .quality-number {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .source {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9f9;
+            border-radius: 6px;
+        }
+
+        .source a {
+            color: #2874a6;
+            text-decoration: none;
+        }
+
+        @media(max-width: 700px) {
+
+            .grid,
+            .quality {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                padding: 20px;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>AI Product Intelligence</h1>
+
+    <p>
+        Transform minimal manufacturer information into
+        structured, commerce-ready product data.
+    </p>
+
+</header>
+
+
+<div class="container">
+
+    <!-- INPUT -->
+
+    <div class="search-card">
+
+        <h2>Product Research</h2>
+
+        <label>Brand</label>
+
+        <input
+            id="brand"
+            placeholder="Example: Bosch"
+        >
+
+
+        <label>Manufacturer Part Number</label>
+
+        <input
+            id="mpn"
+            placeholder="Example: GSR 120-LI"
+        >
+
+
+        <label>Product Description</label>
+
+        <textarea
+            id="description"
+            placeholder="Example: Cordless drill"
+        ></textarea>
+
+
+        <button onclick="researchProduct()">
+
+            Generate Product Intelligence
+
+        </button>
+
+    </div>
+
+
+    <!-- LOADING -->
+
+    <div id="loading">
+
+        🔍 Researching product and analyzing sources...
+
+    </div>
+
+
+    <!-- RESULTS -->
+
+    <div id="result"></div>
+
+</div>
+
+
+<script>
+
+
+async function researchProduct() {
+
+    const brand =
+        document.getElementById("brand").value;
+
+    const mpn =
+        document.getElementById("mpn").value;
+
+    const description =
+        document.getElementById("description").value;
+
+
+    if (!brand || !mpn || !description) {
+
+        alert("Please fill in all fields.");
+
+        return;
+
+    }
+
+
+    document.getElementById("loading").style.display =
+        "block";
+
+    document.getElementById("result").innerHTML = "";
+
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:8000/product",
+            {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    brand: brand,
+                    mpn: mpn,
+                    description: description
+
+                })
+
+            }
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Backend returned an error"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        displayResult(data);
+
+
+    }
+
+    catch (error) {
+
+        document.getElementById("result").innerHTML = `
+
+            <div class="card">
+
+                <h2>❌ Error</h2>
+
+                <p>
+                    Could not retrieve product information.
+                    Make sure the backend is running.
+                </p>
+
+            </div>
+
+        `;
+
+        console.error(error);
+
+    }
+
+
+    document.getElementById("loading").style.display =
+        "none";
+
+}
+
+
+
+function displayResult(data) {
+
+    const product =
+        data.product;
+
+    const classification =
+        data.classification;
+
+    const quality =
+        data.quality;
+
+
+    let html = `
+
+        <!-- PRODUCT -->
+
+        <div class="card">
+
+            <div class="product-header">
+
+                <div>
+
+                    <h2>
+                        ${product.name}
+                    </h2>
+
+                    <p>
+                        ${product.description}
+                    </p>
+
+                </div>
+
+                <div class="badge">
+
+                    ${classification.category}
+
+                </div>
+
+            </div>
+
+
+            <hr>
+
+
+            <p>
+                <b>Brand:</b>
+                ${product.brand}
+            </p>
+
+            <p>
+                <b>Manufacturer Part Number:</b>
+                ${product.mpn}
+            </p>
+
+        </div>
+
+
+        <!-- GRID -->
+
+        <div class="grid">
+
+        <div class="card">
+
+    <h2>⚙️ Specifications</h2>
+
+    <ul>
+
+        ${
+            Object.entries(data.specifications)
+            .map(
+                ([key, value]) =>
+                `<li><b>${key}:</b> ${value}</li>`
+            )
+            .join("")
+        }
+
+    </ul>
+
+</div>
+
+
+            <!-- FEATURES -->
+
+            <div class="card">
+
+                <h2>✨ Features</h2>
+
+                <ul>
+
+                    ${data.features.map(
+                        feature =>
+                        `<li>${feature}</li>`
+                    ).join("")}
+
+                </ul>
+
+            </div>
+
+
+            <!-- APPLICATIONS -->
+
+            <div class="card">
+
+                <h2>🏭 Applications</h2>
+
+                <ul>
+
+                    ${data.applications.map(
+                        application =>
+                        `<li>${application}</li>`
+                    ).join("")}
+
+                </ul>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- QUALITY -->
+
+        <div class="card">
+
+            <h2>📊 Data Quality</h2>
+
+            <div class="quality">
+
+                <div class="quality-box">
+
+                    <div class="quality-number">
+
+                        ${Math.round(
+                            quality.confidence * 100
+                        )}%
+
+                    </div>
+
+                    <div>
+                        Confidence
+                    </div>
+
+                </div>
+
+
+                <div class="quality-box">
+
+                    <div class="quality-number">
+
+                        ${Math.round(
+                            quality.completeness * 100
+                        )}%
+
+                    </div>
+
+                    <div>
+                        Completeness
+                    </div>
+
+                </div>
+
+
+                <div class="quality-box">
+
+                    <div class="quality-number">
+
+                        ${quality.source_count}
+
+                    </div>
+
+                    <div>
+                        Sources
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- KEYWORDS -->
+
+        <div class="card">
+
+            <h2>🔑 Keywords</h2>
+
+            <p>
+
+                ${data.keywords.map(
+                    keyword =>
+                    `<span class="badge">
+                        ${keyword}
+                    </span>`
+                ).join(" ")}
+
+            </p>
+
+        </div>
+
+
+        <!-- SOURCES -->
+
+        <div class="card">
+
+            <h2>🔗 Research Sources</h2>
+
+            ${data.sources.map(
+
+                source => `
+
+                    <div class="source">
+
+                        <a
+                            href="${source.url}"
+                            target="_blank"
+                        >
+                            ${source.title}
+                        </a>
+
+                        <br>
+
+                        Relevance score:
+                        ${source.relevance}
+
+                    </div>
+
+                `
+
+            ).join("")}
+
+        </div>
+
+    `;
+
+
+    document.getElementById("result").innerHTML =
+        html;
+
+}
+
+
+</script>
+
+</body>
+</html>
